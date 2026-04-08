@@ -13,6 +13,7 @@ const fileName = document.getElementById("file-name");
 const fileSize = document.getElementById("file-size");
 const removeFileBtn = document.getElementById("remove-file");
 const languageSelect = document.getElementById("language");
+const modelSelect = document.getElementById("model");
 const startBtn = document.getElementById("start-btn");
 const progressSection = document.getElementById("progress-section");
 const progressBar = document.getElementById("progress-bar");
@@ -163,7 +164,7 @@ async function transcribeChunk(file, index, total) {
 
   const formData = new FormData();
   formData.append("file", file);
-  formData.append("model", "whisper-large-v3");
+  formData.append("model", modelSelect.value);
   if (language !== "auto") {
     formData.append("language", language);
   }
