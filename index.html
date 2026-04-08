@@ -33,20 +33,45 @@
         </select>
       </div>
       <div id="fal-key-section">
-        <p>Hol dir deinen Key auf <a href="https://fal.ai/dashboard/keys" target="_blank" rel="noopener">fal.ai/dashboard/keys</a></p>
-        <div class="input-row">
-          <input type="password" id="fal-api-key" placeholder="fal-Key eingeben..." autocomplete="off">
-          <button id="save-fal-key" class="btn btn-secondary">Speichern</button>
+        <div id="fal-key-saved" class="key-saved hidden">
+          <p class="key-saved-text">fal.ai Key gespeichert</p>
+          <div class="key-saved-actions">
+            <button id="fal-key-change" class="btn btn-secondary btn-small">Key ändern</button>
+            <button id="fal-key-delete" class="btn btn-secondary btn-small btn-danger">Key löschen</button>
+          </div>
         </div>
-        <p id="fal-key-status" class="status-text"></p>
+        <div id="fal-key-input">
+          <p>Hol dir deinen Key auf <a href="https://fal.ai/dashboard/keys" target="_blank" rel="noopener">fal.ai/dashboard/keys</a></p>
+          <div class="input-row">
+            <input type="password" id="fal-api-key" placeholder="KEY_ID:KEY_SECRET eingeben..." autocomplete="off">
+            <button id="save-fal-key" class="btn btn-secondary">Speichern</button>
+          </div>
+          <p id="fal-key-status" class="status-text"></p>
+        </div>
       </div>
       <div id="groq-key-section" class="hidden">
-        <p>Hol dir deinen kostenlosen Key auf <a href="https://console.groq.com" target="_blank" rel="noopener">console.groq.com</a></p>
-        <div class="input-row">
-          <input type="password" id="groq-api-key" placeholder="gsk_..." autocomplete="off">
-          <button id="save-groq-key" class="btn btn-secondary">Speichern</button>
+        <div id="groq-key-saved" class="key-saved hidden">
+          <p class="key-saved-text">Groq Key gespeichert</p>
+          <div class="key-saved-actions">
+            <button id="groq-key-change" class="btn btn-secondary btn-small">Key ändern</button>
+            <button id="groq-key-delete" class="btn btn-secondary btn-small btn-danger">Key löschen</button>
+          </div>
         </div>
-        <p id="groq-key-status" class="status-text"></p>
+        <div id="groq-key-input">
+          <p>Hol dir deinen kostenlosen Key auf <a href="https://console.groq.com" target="_blank" rel="noopener">console.groq.com</a></p>
+          <div class="input-row">
+            <input type="password" id="groq-api-key" placeholder="gsk_..." autocomplete="off">
+            <button id="save-groq-key" class="btn btn-secondary">Speichern</button>
+          </div>
+          <p id="groq-key-status" class="status-text"></p>
+        </div>
+        <div id="groq-limit-hint" class="card-info" style="margin-top: 0.75rem;">
+          <div class="info-icon">⚡</div>
+          <div class="info-content">
+            <p class="info-title">Groq Free Tier — Limits beachten</p>
+            <p class="info-text">Max. 2 Stunden Audio pro Stunde. Für längere oder häufigere Nutzung empfehlen wir den <a href="https://console.groq.com/settings/billing" target="_blank" rel="noopener">Developer Tier</a> (kostenlos, nur Kreditkarte zur Verifizierung) — oder wechsle zu <strong>fal.ai</strong> (~1 Cent/Stunde, keine Limits).</p>
+          </div>
+        </div>
       </div>
     </section>
 

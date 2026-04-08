@@ -29,23 +29,21 @@ const transcript = document.getElementById("transcript");
 const copyBtn = document.getElementById("copy-btn");
 const downloadBtn = document.getElementById("download-btn");
 
+// --- Key UI Elements ---
+const falKeySaved = document.getElementById("fal-key-saved");
+const falKeyInputSection = document.getElementById("fal-key-input");
+const falKeyChangeBtn = document.getElementById("fal-key-change");
+const falKeyDeleteBtn = document.getElementById("fal-key-delete");
+const groqKeySaved = document.getElementById("groq-key-saved");
+const groqKeyInputSection = document.getElementById("groq-key-input");
+const groqKeyChangeBtn = document.getElementById("groq-key-change");
+const groqKeyDeleteBtn = document.getElementById("groq-key-delete");
+
 // --- Init: Keys laden ---
-const savedGroqKey = localStorage.getItem("groq_api_key") || "";
-const savedFalKey = localStorage.getItem("fal_api_key") || "";
-
-if (savedGroqKey) {
-  groqKeyInput.value = savedGroqKey;
-  groqKeyStatus.textContent = "Key gespeichert";
-  groqKeyStatus.className = "status-text success";
-}
-if (savedFalKey) {
-  falKeyInput.value = savedFalKey;
-  falKeyStatus.textContent = "Key gespeichert";
-  falKeyStatus.className = "status-text success";
-}
-
 updateProviderUI();
 updateModelOptions();
+updateKeyUI("fal");
+updateKeyUI("groq");
 updateStartButton();
 
 // --- Provider Switch ---
@@ -76,6 +74,21 @@ function updateModelOptions() {
   }
 }
 
+// --- Key UI ---
+function updateKeyUI(provider) {
+  const hasKey = !!localStorage.getItem(provider === "fal" ? "fal_api_key" : "groq_api_key");
+  const savedEl = provider === "fal" ? falKeySaved : groqKeySaved;
+  const inputEl = provider === "fal" ? falKeyInputSection : groqKeyInputSection;
+
+  if (hasKey) {
+    savedEl.classList.remove("hidden");
+    inputEl.classList.add("hidden");
+  } else {
+    savedEl.classList.add("hidden");
+    inputEl.classList.remove("hidden");
+  }
+}
+
 // --- API Keys speichern ---
 saveGroqKeyBtn.addEventListener("click", () => {
   const key = groqKeyInput.value.trim();
@@ -85,8 +98,8 @@ saveGroqKeyBtn.addEventListener("click", () => {
     return;
   }
   localStorage.setItem("groq_api_key", key);
-  groqKeyStatus.textContent = "Key gespeichert";
-  groqKeyStatus.className = "status-text success";
+  groqKeyInput.value = "";
+  updateKeyUI("groq");
   updateStartButton();
 });
 
@@ -97,15 +110,42 @@ saveFalKeyBtn.addEventListener("click", () => {
     falKeyStatus.className = "status-text error";
     return;
   }
-  // Key-Format normalisieren: Falls nur Key-ID ohne Doppelpunkt, warnen
-  if (!key.includes(":") && !key.includes("-")) {
-    falKeyStatus.textContent = "Key sieht unvollständig aus — bitte den vollständigen Key kopieren";
+  if (!key.includes(":")) {
+    falKeyStatus.textContent = "Key unvollständig — muss KEY_ID:KEY_SECRET enthalten (mit Doppelpunkt)";
     falKeyStatus.className = "status-text error";
     return;
   }
   localStorage.setItem("fal_api_key", key);
-  falKeyStatus.textContent = "Key gespeichert";
-  falKeyStatus.className = "status-text success";
+  falKeyInput.value = "";
+  falKeyStatus.textContent = "";
+  updateKeyUI("fal");
+  updateStartButton();
+});
+
+// --- Key ändern / löschen ---
+falKeyChangeBtn.addEventListener("click", () => {
+  falKeySaved.classList.add("hidden");
+  falKeyInputSection.classList.remove("hidden");
+  falKeyInput.value = localStorage.getItem("fal_api_key") || "";
+});
+
+falKeyDeleteBtn.addEventListener("click", () => {
+  localStorage.removeItem("fal_api_key");
+  falKeyInput.value = "";
+  updateKeyUI("fal");
+  updateStartButton();
+});
+
+groqKeyChangeBtn.addEventListener("click", () => {
+  groqKeySaved.classList.add("hidden");
+  groqKeyInputSection.classList.remove("hidden");
+  groqKeyInput.value = localStorage.getItem("groq_api_key") || "";
+});
+
+groqKeyDeleteBtn.addEventListener("click", () => {
+  localStorage.removeItem("groq_api_key");
+  groqKeyInput.value = "";
+  updateKeyUI("groq");
   updateStartButton();
 });
 
@@ -166,8 +206,8 @@ async function startTranscription() {
 
   const provider = providerSelect.value;
   const apiKey = provider === "groq"
-    ? (groqKeyInput.value.trim() || localStorage.getItem("groq_api_key"))
-    : (falKeyInput.value.trim() || localStorage.getItem("fal_api_key"));
+    ? localStorage.getItem("groq_api_key")
+    : localStorage.getItem("fal_api_key");
 
   if (!apiKey) return;
 
@@ -429,8 +469,8 @@ downloadBtn.addEventListener("click", () => {
 function updateStartButton() {
   const provider = providerSelect.value;
   const hasKey = provider === "groq"
-    ? !!(groqKeyInput.value.trim() || localStorage.getItem("groq_api_key"))
-    : !!(falKeyInput.value.trim() || localStorage.getItem("fal_api_key"));
+    ? !!localStorage.getItem("groq_api_key")
+    : !!localStorage.getItem("fal_api_key");
   startBtn.disabled = !selectedFile || !hasKey;
 }
 
