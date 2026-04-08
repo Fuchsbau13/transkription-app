@@ -194,22 +194,23 @@ async function startTranscription() {
 // ==========================================
 
 async function transcribeWithFal(apiKey) {
-  if (!window.createFalClient) {
-    throw new Error("fal.ai Client konnte nicht geladen werden. Bitte Seite neu laden.");
-  }
-  const fal = window.createFalClient({ credentials: apiKey });
   const falModel = modelSelect.value;
   const language = languageSelect.value;
 
-  // Schritt 1: Datei hochladen via fal.ai Client
-  updateProgress(10, "Datei wird hochgeladen...");
-  const audioUrl = await fal.storage.upload(selectedFile);
+  // Schritt 1: Datei als Data-URL lesen (Base64)
+  updateProgress(10, "Datei wird vorbereitet...");
+  const dataUrl = await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error("Datei konnte nicht gelesen werden"));
+    reader.readAsDataURL(selectedFile);
+  });
 
-  // Schritt 2: Transkription starten
+  // Schritt 2: Direkt an fal.ai senden
   updateProgress(30, "Transkription läuft...");
 
   const input = {
-    audio_url: audioUrl,
+    audio_url: dataUrl,
     task: "transcribe",
     chunk_level: "segment",
     version: "3",
@@ -219,17 +220,34 @@ async function transcribeWithFal(apiKey) {
     input.language = language;
   }
 
-  const result = await fal.subscribe(falModel, {
-    input,
-    logs: false,
-    onQueueUpdate: (update) => {
-      if (update.status === "IN_PROGRESS") {
-        updateProgress(60, "Wird transkribiert...");
-      }
+  const response = await fetch(`https://fal.run/${falModel}`, {
+    method: "POST",
+    headers: {
+      Authorization: `Key ${apiKey}`,
+      "Content-Type": "application/json",
     },
+    body: JSON.stringify(input),
   });
 
-  const data = result.data;
+  const responseText = await response.text();
+
+  if (!response.ok) {
+    let errorMsg;
+    try {
+      const errData = JSON.parse(responseText);
+      errorMsg = errData.detail?.[0]?.msg || errData.detail || responseText;
+    } catch {
+      errorMsg = responseText;
+    }
+    throw new Error(`fal.ai Fehler (${response.status}): ${errorMsg}`);
+  }
+
+  let data;
+  try {
+    data = JSON.parse(responseText);
+  } catch {
+    throw new Error("Ungültige Antwort von fal.ai");
+  }
 
   // Timestamps formatieren
   if (timestampsCheckbox.checked && data.chunks && data.chunks.length > 0) {
