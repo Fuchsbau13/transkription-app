@@ -22,7 +22,7 @@ Du kopierst die fertige App und veröffentlichst sie unter deiner eigenen URL. K
 ### Schritt 1: fal.ai API-Key holen
 
 1. Gehe auf [fal.ai](https://fal.ai) und erstelle einen Account
-2. Gehe auf [fal.ai/dashboard/keys](https://fal.ai/dashboard/keys)
+2. Gehe auf **Settings → API Keys** ([fal.ai/dashboard/keys](https://fal.ai/dashboard/keys))
 3. Klicke **Add Key** → Name vergeben → **Create Key**
 4. **WICHTIG: Kopiere den vollständigen Key SOFORT** — er wird nur einmal angezeigt!
 5. Der Key besteht aus zwei Teilen mit einem `:` in der Mitte, z.B. `abc123-def:xyz789secret`
