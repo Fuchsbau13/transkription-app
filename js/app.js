@@ -219,11 +219,16 @@ async function transcribeWithFal(apiKey) {
 
   // Schritt 2: Datei hochladen
   updateProgress(30, "Datei wird hochgeladen...");
-  const uploadResponse = await fetch(upload_url, {
-    method: "PUT",
-    headers: { "Content-Type": contentType },
-    body: selectedFile,
-  });
+  let uploadResponse;
+  try {
+    uploadResponse = await fetch(upload_url, {
+      method: "PUT",
+      headers: { "Content-Type": contentType },
+      body: selectedFile,
+    });
+  } catch (uploadErr) {
+    throw new Error(`Datei-Upload Netzwerkfehler: ${uploadErr.message}`);
+  }
 
   if (!uploadResponse.ok) {
     throw new Error(`Datei-Upload fehlgeschlagen (${uploadResponse.status})`);
@@ -243,14 +248,19 @@ async function transcribeWithFal(apiKey) {
     input.language = language;
   }
 
-  const response = await fetch(`https://fal.run/${falModel}`, {
-    method: "POST",
-    headers: {
-      Authorization: `Key ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(input),
-  });
+  let response;
+  try {
+    response = await fetch(`https://fal.run/${falModel}`, {
+      method: "POST",
+      headers: {
+        Authorization: `Key ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(input),
+    });
+  } catch (fetchErr) {
+    throw new Error(`Transkription Netzwerkfehler: ${fetchErr.message}`);
+  }
 
   const responseText = await response.text();
 
