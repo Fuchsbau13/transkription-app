@@ -64,7 +64,8 @@ function updateModelOptions() {
   const provider = providerSelect.value;
   if (provider === "fal") {
     modelSelect.innerHTML = `
-      <option value="fal-ai/whisper" selected>Whisper Large v3 (fal.ai)</option>
+      <option value="fal-ai/wizper" selected>Wizper — blitzschnell (fal.ai)</option>
+      <option value="fal-ai/whisper">Whisper Large v3 (fal.ai)</option>
     `;
   } else {
     modelSelect.innerHTML = `
@@ -92,6 +93,12 @@ saveFalKeyBtn.addEventListener("click", () => {
   const key = falKeyInput.value.trim();
   if (!key) {
     falKeyStatus.textContent = "Bitte Key eingeben";
+    falKeyStatus.className = "status-text error";
+    return;
+  }
+  // Key-Format normalisieren: Falls nur Key-ID ohne Doppelpunkt, warnen
+  if (!key.includes(":") && !key.includes("-")) {
+    falKeyStatus.textContent = "Key sieht unvollständig aus — bitte den vollständigen Key kopieren";
     falKeyStatus.className = "status-text error";
     return;
   }
@@ -205,7 +212,8 @@ async function transcribeWithFal(apiKey) {
     body.language = language;
   }
 
-  const response = await fetch("https://fal.run/fal-ai/whisper", {
+  const falModel = modelSelect.value;
+  const response = await fetch(`https://fal.run/${falModel}`, {
     method: "POST",
     headers: {
       Authorization: `Key ${apiKey}`,
