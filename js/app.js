@@ -249,49 +249,43 @@ async function transcribeWithFal(apiKey) {
 }
 
 async function uploadToFal(apiKey, file) {
-  // Initiate upload um eine signed URL zu bekommen
-  const initResponse = await fetch("https://rest.fal.run/fal-ai/whisper/storage/upload/initiate", {
-    method: "POST",
-    headers: {
-      Authorization: `Key ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      file_name: file.name,
-      content_type: file.type || "audio/mpeg",
-    }),
-  });
+  const contentType = file.type || "audio/mp4";
+
+  // Schritt 1: Upload initiieren — bekommt signed URL zurück
+  const initResponse = await fetch(
+    "https://rest.fal.ai/storage/upload/initiate?storage_type=fal-cdn-v3",
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Key ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        file_name: file.name,
+        content_type: contentType,
+      }),
+    }
+  );
 
   if (!initResponse.ok) {
-    // Fallback: Datei als Data-URL senden
-    return await fileToDataUrl(file);
+    const errText = await initResponse.text();
+    throw new Error(`Upload-Fehler (${initResponse.status}): ${errText}`);
   }
 
-  const initData = await initResponse.json();
-  const uploadUrl = initData.upload_url;
-  const fileUrl = initData.file_url;
+  const { upload_url, file_url } = await initResponse.json();
 
-  // Datei hochladen
-  const uploadResponse = await fetch(uploadUrl, {
+  // Schritt 2: Datei an die signed URL hochladen
+  const uploadResponse = await fetch(upload_url, {
     method: "PUT",
-    headers: { "Content-Type": file.type || "audio/mpeg" },
+    headers: { "Content-Type": contentType },
     body: file,
   });
 
   if (!uploadResponse.ok) {
-    return await fileToDataUrl(file);
+    throw new Error(`Datei-Upload fehlgeschlagen (${uploadResponse.status})`);
   }
 
-  return fileUrl;
-}
-
-function fileToDataUrl(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
+  return file_url;
 }
 
 // ==========================================
